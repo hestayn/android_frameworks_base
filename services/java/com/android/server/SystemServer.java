@@ -1846,7 +1846,7 @@ public final class SystemServer {
 
             traceBeginAndSlog("StartSystemUI");
             try {
-                startSystemUi(context, windowManagerF);
+                // startSystemUi(context, windowManagerF); // KILLED FOR KIOSK
             } catch (Throwable e) {
                 reportWtf("starting System UI", e);
             }
