@@ -332,11 +332,11 @@ public class KeyguardServiceDelegate {
             if (DEBUG) Log.v(TAG, "onScreenTurnedOn(showListener = " + drawnListener + ")");
             mKeyguardService.onScreenTurningOn(new KeyguardShowDelegate(drawnListener));
         } else {
-            // try again when we establish a connection
-            Slog.w(TAG, "onScreenTurningOn(): no keyguard service!");
-            // This shouldn't happen, but if it does, show the scrim immediately and
-            // invoke the listener's callback after the service actually connects.
-            mDrawnListenerWhenConnect = drawnListener;
+            // FAKING IT FOR KIOSK
+            Slog.w(TAG, "onScreenTurningOn(): no keyguard service! Faking onDrawn");
+            if (drawnListener != null) {
+                drawnListener.onDrawn();
+            }
         }
         mKeyguardState.screenState = SCREEN_STATE_TURNING_ON;
     }
