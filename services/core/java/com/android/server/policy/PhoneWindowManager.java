@@ -644,7 +644,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mScreenOnEarly;
     boolean mScreenOnFully;
     ScreenOnListener mScreenOnListener;
-    boolean mKeyguardDrawComplete = true; // FORCED KIOSK BYPASS
+    boolean mKeyguardDrawComplete;
     boolean mWindowManagerDrawComplete;
     boolean mOrientationSensorEnabled = false;
     int mCurrentAppOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -1678,6 +1678,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void powerPress(long eventTime, boolean interactive, int count) {
+        if (mScreenOnEarly && !mScreenOnFully) {
+            Slog.i(TAG, "Suppressed redundant power key press while "
+                    + "already in the process of turning the screen on.");
+            return;
+        }
         Slog.d(TAG, "powerPress: eventTime=" + eventTime + " interactive=" + interactive
                 + " count=" + count + " beganFromNonInteractive=" + mBeganFromNonInteractive +
                 " mShortPressOnPowerBehavior=" + mShortPressOnPowerBehavior);
@@ -7617,7 +7622,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             if (mKeyguardDelegate != null) {
                 mHandler.removeMessages(MSG_KEYGUARD_DRAWN_TIMEOUT);
             }
-            mWindowManagerDrawComplete = true; // FORCED KIOSK BYPASS
+            mWindowManagerDrawComplete = false;
         }
 
         // ... eventually calls finishWindowsDrawn which will finalize our screen turn on
@@ -7635,8 +7640,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         synchronized (mLock) {
             mScreenOnEarly = false;
             mScreenOnFully = false;
-            mKeyguardDrawComplete = true; // FORCED KIOSK BYPASS
-            mWindowManagerDrawComplete = true; // FORCED KIOSK BYPASS
+            mKeyguardDrawComplete = false;
+            mWindowManagerDrawComplete = false;
             mScreenOnListener = null;
             updateOrientationListenerLp();
 
@@ -7663,14 +7668,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         synchronized (mLock) {
             mScreenOnEarly = true;
             mScreenOnFully = false;
-            // FORCED KIOSK BYPASS: No keyguard/SystemUI, mark both ready immediately
-            mKeyguardDrawComplete = true;
-            mWindowManagerDrawComplete = true;
+            mKeyguardDrawComplete = false;
+            mWindowManagerDrawComplete = false;
             mScreenOnListener = screenOnListener;
+
+            if (mKeyguardDelegate != null && mKeyguardDelegate.hasKeyguard()) {
+                mHandler.removeMessages(MSG_KEYGUARD_DRAWN_TIMEOUT);
+                mHandler.sendEmptyMessageDelayed(MSG_KEYGUARD_DRAWN_TIMEOUT,
+                        getKeyguardDrawnTimeout());
+                mKeyguardDelegate.onScreenTurningOn(mKeyguardDrawnCallback);
+            } else {
+                if (DEBUG_WAKEUP) Slog.d(TAG,
+                        "null mKeyguardDelegate: setting mKeyguardDrawComplete.");
+                finishKeyguardDrawn();
+            }
         }
-        // FORCED KIOSK BYPASS: Skip waitForAllWindowsDrawn — no windows will ever "draw"
-        // since SystemUI is removed. Directly finish screen turn on.
-        finishScreenTurningOn();
     }
 
     // Called on the DisplayManager's DisplayPowerController thread.
@@ -7703,11 +7715,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private void finishWindowsDrawn() {
         synchronized (mLock) {
-            if (!mScreenOnEarly) {
-                return; // Screen is not turned on.
+            if (!mScreenOnEarly || mWindowManagerDrawComplete) {
+                return; // Screen is not turned on or we did already handle this case earlier.
             }
-            // FORCED KIOSK BYPASS: mWindowManagerDrawComplete is always true in kiosk mode.
-            // Don't early-return if it was already set — still need to call finishScreenTurningOn.
+
             mWindowManagerDrawComplete = true;
         }
 
@@ -8382,7 +8393,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     @Override
     public boolean canDismissBootAnimation() {
-        return true; // FORCED KIOSK BYPASS
+        synchronized (mLock) {
+            return mKeyguardDrawComplete;
+        }
     }
 
     ProgressDialog mBootMsgDialog = null;
