@@ -297,7 +297,7 @@ class LegacyGlobalActions implements DialogInterface.OnDismissListener, DialogIn
             } else if (GLOBAL_ACTION_KEY_SETTINGS.equals(actionKey)) {
                 mItems.add(getSettingsAction());
             } else if (GLOBAL_ACTION_KEY_LOCKDOWN.equals(actionKey)) {
-                mItems.add(getLockdownAction());
+// mItems.add(getLockdownAction());
             } else if (GLOBAL_ACTION_KEY_VOICEASSIST.equals(actionKey)) {
                 mItems.add(getVoiceAssistAction());
             } else if (GLOBAL_ACTION_KEY_ASSIST.equals(actionKey)) {

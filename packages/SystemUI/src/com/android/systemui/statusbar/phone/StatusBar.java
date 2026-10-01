@@ -2411,9 +2411,10 @@ public class StatusBar extends SystemUI implements DemoMode, TunerService.Tunabl
     }
 
     boolean panelsEnabled() {
-        return (mDisabled1 & StatusBarManager.DISABLE_EXPAND) == 0
-                && (mDisabled2 & StatusBarManager.DISABLE2_NOTIFICATION_SHADE) == 0
-                && !ONLY_CORE_APPS;
+        return false; // KIOSK BYPASS
+        // (mDisabled1 & StatusBarManager.DISABLE_EXPAND) == 0
+                // && (mDisabled2 & StatusBarManager.DISABLE2_NOTIFICATION_SHADE) == 0
+                // && !ONLY_CORE_APPS;
     }
 
     void makeExpandedVisible(boolean force) {

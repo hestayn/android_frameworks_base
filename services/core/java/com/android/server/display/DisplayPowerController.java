@@ -482,7 +482,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             }
         }
 
-        mColorFadeEnabled = !ActivityManager.isLowRamDeviceStatic();
+        mColorFadeEnabled = false; // KIOSK: Fix ColorFade disconnect crash on Exynos
         mColorFadeFadesConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_animateScreenLights);
 

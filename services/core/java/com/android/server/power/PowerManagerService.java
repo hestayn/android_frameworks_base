@@ -1436,6 +1436,7 @@ public final class PowerManagerService extends SystemService
 
     private void wakeUpInternal(long eventTime, String reason, int uid, String opPackageName,
             int opUid) {
+        Slog.d(TAG, "ERMETAL-DEBUG: wakeUpInternal called! reason=" + reason, new Throwable("wakeUp StackTrace"));
         synchronized (mLock) {
             if (wakeUpNoUpdateLocked(eventTime, reason, uid, opPackageName, opUid)) {
                 updatePowerStateLocked();
@@ -1486,6 +1487,7 @@ public final class PowerManagerService extends SystemService
     }
 
     private void goToSleepInternal(long eventTime, int reason, int flags, int uid) {
+        Slog.d(TAG, "ERMETAL-DEBUG: goToSleepInternal called! reason=" + reason, new Throwable("goToSleep StackTrace"));
         synchronized (mLock) {
             if (goToSleepNoUpdateLocked(eventTime, reason, flags, uid)) {
                 updatePowerStateLocked();

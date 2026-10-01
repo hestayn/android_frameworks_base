@@ -1493,6 +1493,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void interceptPowerKeyDown(KeyEvent event, boolean interactive) {
+        Slog.d(TAG, "ERMETAL-DEBUG: interceptPowerKeyDown! interactive=" + interactive);
         // Hold a wake lock until the power key is released.
         if (!mPowerKeyWakeLock.isHeld()) {
             mPowerKeyWakeLock.acquire();
@@ -1619,6 +1620,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private void interceptPowerKeyUp(KeyEvent event, boolean interactive, boolean canceled) {
         final boolean handled = canceled || mPowerKeyHandled;
+        Slog.d(TAG, "ERMETAL-DEBUG: interceptPowerKeyUp! interactive=" + interactive + " canceled=" + canceled + " handled=" + handled + " mPowerKeyHandled=" + mPowerKeyHandled);
         mScreenshotChordPowerKeyTriggered = false;
         cancelPendingScreenshotChordAction();
         cancelPendingPowerKeyAction();
@@ -1683,7 +1685,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     + "already in the process of turning the screen on.");
             return;
         }
-        Slog.d(TAG, "powerPress: eventTime=" + eventTime + " interactive=" + interactive
+        Slog.d(TAG, "ERMETAL-DEBUG: powerPress called! eventTime=" + eventTime + " interactive=" + interactive
                 + " count=" + count + " beganFromNonInteractive=" + mBeganFromNonInteractive +
                 " mShortPressOnPowerBehavior=" + mShortPressOnPowerBehavior);
 
@@ -1692,13 +1694,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         } else if (count == 3) {
             powerMultiPressAction(eventTime, interactive, mTriplePressOnPowerBehavior);
         } else if (interactive && !mBeganFromNonInteractive) {
+            Slog.d(TAG, "ERMETAL-DEBUG: Executing SHORT_PRESS behavior: " + mShortPressOnPowerBehavior);
             switch (mShortPressOnPowerBehavior) {
                 case SHORT_PRESS_POWER_NOTHING:
                     break;
                 case SHORT_PRESS_POWER_GO_TO_SLEEP:
+                    Slog.d(TAG, "ERMETAL-DEBUG: Calling goToSleep!");
                     goToSleep(eventTime, PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, 0);
+                    Slog.d(TAG, "ERMETAL-DEBUG: goToSleep call finished.");
                     break;
                 case SHORT_PRESS_POWER_REALLY_GO_TO_SLEEP:
+                    Slog.d(TAG, "ERMETAL-DEBUG: Calling really goToSleep!");
                     goToSleep(eventTime, PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON,
                             PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
                     break;
@@ -7585,6 +7591,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void wakeUpFromPowerKey(long eventTime) {
+        Slog.d(TAG, "ERMETAL-DEBUG: wakeUpFromPowerKey CALLED! Calling wakeUp() now...");
         wakeUp(eventTime, mAllowTheaterModeWakeFromPowerKey, "android.policy:POWER");
     }
 
